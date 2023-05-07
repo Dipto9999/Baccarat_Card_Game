@@ -1,5 +1,3 @@
-Sure, I can help you make this README easier to read! Here's a modified version:
-
 # Baccarat Card Game
 
 This is a command-line Baccarat card game written in Golang. In this game, you play against a computer dealer with the goal of having a hand value closer to 9 than the dealer's hand. The game uses a standard deck of cards where face cards (J, Q, K) and 10s have a value of zero, and Aces have a value of one.
