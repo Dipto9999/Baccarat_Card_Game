@@ -26,14 +26,14 @@ func getCardScore(card string) int {
 	return score
 }
 
-func (cards deck) calculateScore(individual string) int {
+func (d deck) calculateScore(individual string) int {
 	score := 0
-	for _, card := range cards {
+	for _, card := range d {
 		score += getCardScore(card)
 	}
 	score = score % 10
 
-	fmt.Printf("%s Score : %d\n", individual, score)
+	fmt.Printf("%s Score : %d\n\n", individual, score)
 	return score
 }
 
@@ -57,15 +57,15 @@ func play_baccarat() string {
 	/* Round 1 */
 	/***********/
 
-	player_deck.addCards(&game_deck, 1)
-	banker_deck.addCards(&game_deck, 1)
+	game_deck.deal(&player_deck, 1)
+	game_deck.deal(&banker_deck, 1)
 
 	/***********/
 	/* Round 2 */
 	/***********/
 
-	player_deck.addCards(&game_deck, 1)
-	banker_deck.addCards(&game_deck, 1)
+	game_deck.deal(&player_deck, 1)
+	game_deck.deal(&banker_deck, 1)
 
 	/********************/
 	/* Calculate Scores */
@@ -79,8 +79,6 @@ func play_baccarat() string {
 
 	if (player_score >= winThreshold) || (banker_score >= winThreshold) {
 		return getWinner(player_score, banker_score)
-	} else {
-		fmt.Printf("\n")
 	}
 
 	/***********/
@@ -93,7 +91,7 @@ func play_baccarat() string {
 	if !(player_final) {
 		banker_final = (banker_score <= finalRoundThreshold)
 	} else {
-		player_deck.addCards(&game_deck, 1)
+		game_deck.deal(&player_deck, 1)
 
 		// Determine if Banker Gets a Third Card
 		banker_final = (banker_final) || (banker_score <= (finalRoundThreshold - 3))
@@ -104,7 +102,7 @@ func play_baccarat() string {
 	}
 
 	if banker_final {
-		banker_deck.addCards(&game_deck, 1)
+		game_deck.deal(&banker_deck, 1)
 	}
 
 	/********************/
