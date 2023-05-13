@@ -1,5 +1,3 @@
-Sure! Here's a revised version of the README with improved coherence:
-
 # Baccarat Card Game
 
 This is a command-line Baccarat card game written in **Golang**. The game involves playing against a computer banker with the objective of obtaining a hand value closer to *9* than the banker's hand. A standard deck of cards is used, where numeric cards hold their face value, face cards (*J*, *Q*, *K*) are valued at 0, and *Aces* are valued at 1.
@@ -64,7 +62,7 @@ The `deck_test.go` file includes test cases to ensure the accuracy of the deck l
 To run the test suite, use the following command:
 
 ```
-go test -v deck_test.go
+go test -v
 ```
 
 This command executes all the test cases in the `deck_test.go` file and provides detailed information about the test results.
