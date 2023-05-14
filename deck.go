@@ -7,105 +7,142 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 )
 
-const totalSuits = 4
-const totalValues = 14
+const (
+	totalValues = 14
+	totalSuits  = 4
+)
 
-func getNumber(max int) int {
-	// Get a new source.
-	r := rand.New(
-		rand.NewSource(time.Now().UnixNano()),
-	)
-
-	// Generate a random nmber within specified range.
-	return r.Intn(max)
-}
-
-// Create a New Type Deck (Slice of Strings)
-type deck []string
+var values [totalValues]string
+var suits [totalSuits]string
 
 /*
-initDeck creates a new deck of cards, represented as a slice of strings. The deck
-is made of 52 cards, with 4 suits (Clubs, Diamonds, Hearts, Spades) and 14 values
-(Ace, 1-10, Jack, Queen, King) for each suit. The cards are ordered first by suit,
-and then by value within each suit.
+init initializes the values and suits arrays.
 */
-func initDeck() deck {
-	// Init Array of Strings for Card Suits.
-	suits := [totalSuits]string{
-		"Clubs", "Diamonds", "Hearts", "Spades",
-	}
-
-	// Init Array of Strings for Card Values
-	values := [totalValues]string{
+func init() {
+	values = [totalValues]string{
 		"Ace", "Jack", "Queen", "King",
 		"1", "2", "3", "4", "5",
 		"6", "7", "8", "9", "10",
 	}
 
-	// Iterate Through Arrays and Init Deck.
+	suits = [totalSuits]string{
+		"Clubs", "Diamonds", "Hearts", "Spades",
+	}
+}
+
+/*
+getNumber generates a random number within the specified range.
+
+Parameters:
+- max: An integer representing the upper bound (exclusive) of the range.
+
+Returns:
+- random number within the range [0, max) as an integer.
+*/
+func getNumber(max int) int {
+	// Get a new source.
+	r := rand.New(
+		rand.NewSource(
+			time.Now().UnixNano(),
+		),
+	)
+
+	// Generate a random number within a specified range.
+	return r.Intn(max)
+}
+
+// Card represents a playing card.
+type card struct {
+	value string
+	suit  string
+}
+
+// Deck represents a deck of cards.
+type deck struct {
+	owner string
+	cards []card
+}
+
+/*
+initDeck creates a new deck of cards by iterating through the suits and values.
+It appends each combination of suit and value as a card to the deck.
+
+Parameters:
+- individual (optional): variadic parameter representing the owner of the deck.
+
+Returns:
+-deck struct representing a new deck of cards with all possible combinations of suits and values.
+*/
+func initDeck(individual ...string) deck {
 	game_deck := deck{}
+	// Iterate through suits and values to create a deck of cards.
 	for _, suit := range suits {
 		for _, value := range values {
-			game_deck = append(game_deck, fmt.Sprintf("%s of %s", value, suit))
+			game_deck.cards = append(
+				game_deck.cards,
+				card{
+					value: value,
+					suit:  suit,
+				},
+			)
 		}
+	}
+	// Identify the owner of the deck.
+	if individual != nil {
+		game_deck.owner = individual[0]
 	}
 
 	return game_deck
 }
 
 /*
-newDeck creates a new deck of cards, represented as a slice of strings. The deck
-contains 52 cards, with 4 suits (Clubs, Diamonds, Hearts, Spades) and 14 values
-(Ace, 1-10, Jack, Queen, King) for each suit. The cards are ordered first by suit,
-and then by value within each suit.
+newDeck creates a new deck of cards, shuffles it, prints it, and saves it to a file.
 
-The function initializes arrays for suits and values, and then iterates through them
-to create the deck. The deck is then shuffled using the `shuffle` method, printed to
-the console using the `print` method, and saved to a file named "game_deck" using
-the `saveToFile` method.
+Parameters:
+- times_shuffled: An integer specifying the number of times the deck should be shuffled.
+- individual (optional): A variadic parameter representing the owner of the deck.
 
-The function returns the created deck as a `deck` type.
+Returns:
+- deck struct representing a new deck of cards with all possible combinations of suits and values.
 */
-func newDeck() deck {
-	// Init Deck
-	game_deck := initDeck()
+func newDeck(times_shuffled int, individual ...string) deck {
+	// Init deck of cards.
+	game_deck := initDeck(individual...)
 
-	game_deck.shuffle(5)
+	game_deck.shuffle(times_shuffled)
 	game_deck.print()
-	game_deck.saveToFile("game_deck.txt")
+
+	// Save the deck of cards to a file.
+	game_deck.saveToFile(
+		strings.ToLower(strings.ReplaceAll(game_deck.owner, " ", "_")) + ".txt",
+	)
 
 	return game_deck
 }
 
 /*
-toString returns a single string representation of the entire deck of cards, or
-a string representation of each individual card, separated by newlines. If the
-`individual` argument is supplied and non-empty, the function will return a string
-representation of each card on its own line. Otherwise, the function will return a
-single string representing the entire deck, with each card separated by a newline.
+toString takes a deck of cards and iterates through each card to
+produce a string representing the entire deck of cards.
 
-The function iterates through the `deck` type and appends each card to a single
-string, using the `fmt.Sprintf` method to format each card string as "%s\n". The
-resulting string is then returned.
+Receiver:
+- d: deck to convert to a string.
 
-If the `individual` argument is supplied, the resulting string will contain one
-card per line, with each line terminated by a newline character ("\n"). Otherwise,
-the resulting string will contain the entire deck as a single string, with each
-card separated by a newline character.
+Returns:
+- deck struct as a string.
 */
-func (d deck) toString(individual ...string) string {
+func (d deck) toString() string {
 	converted := ""
-	for i := 0; i < len(d); i++ {
-		if individual != nil {
-			converted += fmt.Sprint(d[i])
-		} else {
-			converted += fmt.Sprint(d[i])
-		}
 
-		if i < len(d)-1 {
+	// Iterate through the deck of cards and convert each card to a string.
+	for i := 0; i < len(d.cards); i++ {
+		converted += fmt.Sprintf("%s of %s", d.cards[i].value, d.cards[i].suit)
+
+		// Add a newline character to the end of each card, except the last.
+		if i < (len(d.cards) - 1) {
 			converted += "\n"
 		}
 	}
@@ -113,90 +150,79 @@ func (d deck) toString(individual ...string) string {
 	return converted
 }
 
+/*
+toByteSlice converts the deck of cards to a byte slice.
+
+Receiver:
+- d: deck to convert to a byte slice.
+
+Returns:
+- deck struct as a byte slice.
+*/
 func (d deck) toByteSlice() []byte {
 	return []byte(d.toString())
 }
 
 /*
-print outputs the contents of the deck of cards to the console, either as a
-single list or as individual cards, depending on the `individual` argument.
+print prints the deck of cards.
 
-If the `individual` argument is supplied and non-empty, the function will print
-each card in the deck on its own line, with a prefix string indicating the source
-of the cards (i.e. the name of the deck). Each line will be formatted as:
-"{prefix} Card #{index} : {card}"
-
-If the `individual` argument is not supplied, the function will print the entire
-deck as a single list, with each card on its own line. Each line will be formatted
-as: "Card #{index} : {card}"
-
-The function iterates through the `deck` type and prints each card to the console,
-using the `fmt.Printf` method to format each card string according to the format
-described above. The output is then terminated with a newline character ("\n").
+Receiver:
+- d: deck struct to print.
 */
-func (d deck) print(individual ...string) {
-	for i, card := range d {
-		if individual != nil {
-			fmt.Printf("%s Card #%d : %s\n", individual[0], (i + 1), card)
-		} else {
-			fmt.Printf("Card #%d : %s\n", (i + 1), card)
-		}
+func (d deck) print() {
+	// Iterate through the deck of cards and convert each card to a string.
+	converted := ""
+	for i := 0; i < len(d.cards); i++ {
+		converted += fmt.Sprintf("%s Card #%d : %s of %s\n",
+			d.owner, (i + 1), d.cards[i].value, d.cards[i].suit,
+		)
 	}
 
-	fmt.Printf("\n")
+	converted += "\n"
+	fmt.Print(converted)
 }
 
 /*
-getCard adds a new card to the end of the deck of cards.
+getCard appends a card to the deck of cards.
 
-The `card` argument is a string representing the new card to be added to the deck.
+Receiver:
+- d: deck to which the card will be appended.
 
-The function modifies the `deck` type by appending the new card to the end of the
-slice, using the `append` method. The modification is made to the original `deck`
-value, which is passed as a pointer (`*deck`).
+Parameters:
+- c: card to append to the deck.
 */
-func (d *deck) getCard(card string) {
-	*d = append(*d, card)
+func (d *deck) getCard(c card) {
+	(*d).cards = append((*d).cards, c)
 }
 
 /*
-giveCard removes a random card from the deck of cards and returns it as a string.
+giveCard retrieves a random card from the deck and removes it.
 
-The function generates a random index `i` within the range of the deck's length,
-using the `getNumber` function, which is assumed to return a random integer between
-0 (inclusive) and `n` (exclusive), where `n` is the length of the deck. The card at
-index `i` is then retrieved from the slice and stored in the `card` variable.
+Receiver:
+- d: deck from which the card will be retrieved.
 
-The function modifies the `deck` type by removing the card at index `i` from the slice,
-using slice indexing and the `append` method. The modification is made to the original
-`deck` value, which is passed as a pointer (`*deck`).
-
-Finally, the function returns the `card` variable, which contains the string value of
-the card that was removed from the deck.
+Returns:
+- card struct representing the card retrieved from the deck.
 */
-func (d *deck) giveCard() string {
-	i := getNumber(len(*d))
-	card := (*d)[i]
+func (d *deck) giveCard() card {
+	// Get a random card from the deck.
+	i := getNumber(len((*d).cards))
+	c := (*d).cards[i]
 
-	*d = append((*d)[:i], (*d)[(i+1):]...)
-	return card
+	// Remove the card from the deck.
+	(*d).cards = append((*d).cards[:i], (*d).cards[(i+1):]...)
+	return c
 }
 
 /*
-shuffle shuffles the order of cards in the deck using a random swapping algorithm.
+shuffle iterates through the deck of cards a specified number of times
+and swaps each card with a random card.
 
-The `iter` argument determines the number of times the shuffling process is repeated.
-If `iter` is less than 0, it is set to 1 to ensure at least one iteration is performed.
+Receiver:
+- d: deck to shuffle.
 
-The function performs the shuffling process by iterating `iter` times. In each iteration,
-it iterates over each card in the deck using the range loop and swaps the current card with
-a randomly selected card. The random index `j` is generated using the `getNumber` function,
-which is assumed to return a random integer between 0 (inclusive) and `n` (exclusive), where
-`n` is the length of the deck. The swap is performed using the multiple assignment syntax
-`(*d)[i], (*d)[j] = (*d)[j], (*d)[i]`.
-
-The shuffling process modifies the order of cards in the original `deck` value, which is
-passed as a pointer (`*deck`).
+Parameters:
+- iter: An integer representing the number of times to iterate through the deck.
 */
 func (d *deck) shuffle(iter int) {
 	if iter < 0 {
@@ -204,31 +230,25 @@ func (d *deck) shuffle(iter int) {
 	}
 
 	for rep := 0; rep < iter; rep++ {
-		for i := range *d {
-			var j = getNumber(len(*d))
-			(*d)[i], (*d)[j] = (*d)[j], (*d)[i]
+		for i := range (*d).cards {
+			// Get a random card from the deck and swap it with the current card.
+			var j = getNumber(len((*d).cards))
+			((*d).cards)[i], ((*d).cards)[j] = ((*d).cards)[j], ((*d).cards)[i]
 		}
 	}
 }
 
 /*
-deal deals a specified number of cards from one deck to another.
+deal takes a specified number of randomly selected cards from the deck
+and gives them to another deck. It then updates the file for the deck
+from which the cards were taken.
 
-The `tx` argument represents the deck from which the cards are being dealt, and `rx`
-represents the deck to which the cards are being dealt. The `num_cards` argument determines
-the number of cards to be dealt. If `num_cards` is less than 0, it is set to 1 to ensure
-at least one card is dealt.
+Receiver:
+- tx: deck from which cards will be taken.
 
-The function performs the dealing process by iterating `num_cards` times. In each iteration,
-it retrieves a card from the `tx` deck by using the `giveCard` method, and adds that card
-to the `rx` deck by using the `getCard` method. This process transfers a card from `tx` to `rx`.
-
-Additionally, after each card is dealt, the `tx` deck is saved to a file named "game_deck"
-using the `saveToFile` method. This allows the deck to be updated and persisted after each
-deal operation.
-
-The dealing process modifies the contents of both the `tx` and `rx` decks, which are passed
-as pointers (`*deck`).
+Parameters:
+- rx: deck to which cards will be given.
+- num_cards: An integer representing the number of cards to take from the deck.
 */
 func (tx *deck) deal(rx *deck, num_cards int) {
 	if num_cards < 0 {
@@ -237,7 +257,10 @@ func (tx *deck) deal(rx *deck, num_cards int) {
 
 	for i := 0; i < num_cards; i++ {
 		rx.getCard(tx.giveCard())
-
-		(*tx).saveToFile("game_deck.txt")
 	}
+
+	// Save the deck of cards to a file.
+	tx.saveToFile(
+		strings.ToLower(strings.ReplaceAll(tx.owner, " ", "_")) + ".txt",
+	)
 }

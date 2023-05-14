@@ -1,6 +1,6 @@
 # Baccarat Card Game
 
-This is a command-line Baccarat card game written in **Golang**. The game involves playing against a computer banker with the objective of obtaining a hand value closer to *9* than the banker's hand. A standard deck of cards is used, where numeric cards hold their face value, face cards (*J*, *Q*, *K*) are valued at 0, and *Aces* are valued at 1.
+This is a command-line Baccarat card game written in **Golang**. The game involves playing against a computer banker with the objective of obtaining a hand value closer to *9* than the banker's hand. A standard deck of cards is used, where numeric cards hold their face value, face cards (*J*, *Q*, *K*) are valued at *0*, and *Aces* are valued at *1*.
 
 ## Table of Contents
 
@@ -13,7 +13,7 @@ This is a command-line Baccarat card game written in **Golang**. The game involv
 
 ## Setup
 
-To play the game, ensure that **Golang** is installed on your system. You can check if **Golang** is installed by running the following command:
+To play the game, ensure that **Golang** is installed on your system. You can check if **Golang** is installed by running the following command :
 
 ```
 go version

@@ -7,29 +7,28 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"strings"
 )
 
 const winThreshold = 8
 const finalRoundThreshold = 5
 
 /*
-getCardScore returns the score value associated with a given card.
+getScore returns the score of the card.
 
-The `card` argument is a string representation of a card, in the format "{value} of {suit}".
-The function extracts the card value from the string by splitting it at the space character.
-If the card value is numeric, it is parsed into an integer using the `strconv.Atoi` function
-and stored in the `score` variable. If the card value is "Ace", the `score` is set to 1. If
-the card value is not numeric and cannot be parsed into an integer, the `score` is set to 0.
+If the card's value is "Ace", the score is 1.
+If the card's value can be converted to an integer, the score is that integer.
+Otherwise, the score is 0.
 
-The function then returns the `score` value, which represents the score associated with the
-given card.
+Receiver:
+- c: card object to get the score for.
+
+Returns:
+- card score as an integer.
 */
-func getCardScore(card string) int {
-	card_value := strings.Split(card, " ")[0]
-	score, err := strconv.Atoi(card_value)
+func (c *card) getScore() int {
+	score, err := strconv.Atoi(c.value)
 
-	if card_value == "Ace" {
+	if c.value == "Ace" {
 		score = 1
 	} else if err != nil {
 		score = 0
@@ -39,48 +38,43 @@ func getCardScore(card string) int {
 }
 
 /*
-calculateScore calculates the score of a deck of cards and prints it to the console.
+calculateScore calculates the score of the deck.
 
-The method takes an additional `individual` argument, which is a string representing
-the identifier or name associated with the deck. This argument is used to display the
-score in the console output.
+The score is calculated by summing up the scores of all cards in the deck,
+then taking the remainder when divided by 10.
 
-The method iterates through each card in the deck and accumulates the score by calling
-the `getCardScore` function on each card. The scores are summed together. After all cards
-are processed, the total score is modulo-divided by 10 to obtain the final score.
+Prints the owner of the deck and the calculated score to the console.
 
-The method then prints the calculated score to the console, formatted as "{individual}
-Score : {score}", where {individual} is the identifier passed as an argument, and {score}
-is the calculated score.
+Receiver:
+- d: deck object to calculate the score for.
 
-Finally, the method returns the calculated score as an integer.
+Returns:
+- calculated score of the deck as an integer.
 */
-func (d deck) calculateScore(individual string) int {
+func (d deck) calculateScore() int {
 	score := 0
-	for _, card := range d {
-		score += getCardScore(card)
+	for _, card := range d.cards {
+		score += card.getScore()
 	}
 	score = score % 10
 
-	fmt.Printf("%s Score : %d\n\n", individual, score)
+	fmt.Printf("%s Score : %d\n\n", d.owner, score)
 	return score
 }
 
 /*
-getWinner determines the winner between a player and a banker based on their scores.
+getWinner determines the winner based on the player and banker scores.
 
-The function takes two integer arguments: `player_score` representing the score of the player,
-and `banker_score` representing the score of the banker. The scores are compared to determine
-the winner of the game.
+If the player's score is greater than the banker's score, "Player" is returned.
+If the banker's score is greater than the player's score, "Banker" is returned.
+Otherwise, "Tie" is returned.
 
-If the `player_score` is greater than the `banker_score`, the function returns "Player" as the
-winner. If the `banker_score` is greater than the `player_score`, the function returns "Banker"
-as the winner. If the scores are equal, indicating a tie, the function returns "Tie".
+Parameters:
+- player_score: score of the player as an integer.
+- banker_score: score of the banker as an integer.
 
-The function does not handle any special cases or tie-breaking rules beyond a simple comparison
-of the scores.
-
-The function returns a string indicating the winner ("Player", "Banker", or "Tie").
+Returns:
+- name of the winner as a string.
 */
 func getWinner(player_score int, banker_score int) string {
 	if player_score > banker_score {
@@ -134,12 +128,14 @@ Round 3:
 The scores of the player and the banker are calculated again, and the results are printed to the
 console. The winner is determined using the `getWinner` function, considering the updated scores.
 The winner's name ("Player", "Banker", or "Tie") is returned as a string.
+
+Returns:
+- name of the winner as a string.
 */
 func play_baccarat() string {
-	game_deck := newDeck()
-
-	player_deck := deck{}
-	banker_deck := deck{}
+	game_deck := newDeck(5, "Game Deck")
+	player_deck := deck{owner: "Player"}
+	banker_deck := deck{owner: "Banker"}
 
 	/***********/
 	/* Round 1 */
@@ -159,14 +155,17 @@ func play_baccarat() string {
 	/* Calculate Scores */
 	/********************/
 
-	player_deck.print("Player")
-	player_score := player_deck.calculateScore("Player")
+	player_deck.print()
+	player_score := player_deck.calculateScore()
 
-	banker_deck.print("Banker")
-	banker_score := banker_deck.calculateScore("Banker")
+	banker_deck.print()
+	banker_score := banker_deck.calculateScore()
 
 	if (player_score >= winThreshold) || (banker_score >= winThreshold) {
-		return getWinner(player_score, banker_score)
+		return getWinner(
+			player_score,
+			banker_score,
+		)
 	}
 
 	/***********/
@@ -181,12 +180,12 @@ func play_baccarat() string {
 	} else {
 		game_deck.deal(&player_deck, 1)
 
-		// Determine if banker gets a third card
+		// Determine if banker gets a third card.
 		banker_final = (banker_final) || (banker_score <= (finalRoundThreshold - 3))
-		banker_final = (banker_final) || ((banker_score == (finalRoundThreshold - 2)) && (getCardScore(player_deck[2]) != winThreshold))
-		banker_final = (banker_final) || ((banker_score == (finalRoundThreshold - 1)) && (getCardScore(player_deck[2]) >= (banker_score - 2)) && (getCardScore(player_deck[2]) < winThreshold))
-		banker_final = (banker_final) || ((banker_score == finalRoundThreshold) && (getCardScore(player_deck[2]) >= (banker_score - 1)) && (getCardScore(player_deck[2]) < winThreshold))
-		banker_final = (banker_final) || ((banker_score == (finalRoundThreshold + 1)) && (getCardScore(player_deck[2]) >= banker_score) && (getCardScore(player_deck[2]) < winThreshold))
+		banker_final = (banker_final) || ((banker_score == (finalRoundThreshold - 2)) && (player_deck.cards[2].getScore() != winThreshold))
+		banker_final = (banker_final) || ((banker_score == (finalRoundThreshold - 1)) && (player_deck.cards[2].getScore() >= (banker_score - 2)) && (player_deck.cards[2].getScore() < winThreshold))
+		banker_final = (banker_final) || ((banker_score == finalRoundThreshold) && (player_deck.cards[2].getScore() >= (banker_score - 1)) && (player_deck.cards[2].getScore() < winThreshold))
+		banker_final = (banker_final) || ((banker_score == (finalRoundThreshold + 1)) && (player_deck.cards[2].getScore() >= banker_score) && (player_deck.cards[2].getScore() < winThreshold))
 	}
 
 	if banker_final {
@@ -197,11 +196,11 @@ func play_baccarat() string {
 	/* Calculate Scores */
 	/********************/
 
-	player_deck.print("Player")
-	player_score = player_deck.calculateScore("Player")
+	player_deck.print()
+	player_score = player_deck.calculateScore()
 
-	banker_deck.print("Banker")
-	banker_score = banker_deck.calculateScore("Banker")
+	banker_deck.print()
+	banker_score = banker_deck.calculateScore()
 
 	return getWinner(
 		player_score,

@@ -11,31 +11,48 @@ import (
 )
 
 /*
-saveToFile saves the deck of cards to a file.
+saveToFile converts a deck of cards to a byte slice and writes it to a file.
 
-The method takes a `filename` argument, which is a string representing the name of the file
-to which the deck should be saved.
+Receiver:
+- d: deck to convert to a byte slice and write to a file.
 
-The method converts the deck into a byte slice using the `toByteSlice` method and writes the
-byte slice to the specified file using the `ioutil.WriteFile` function. The file is created
-if it does not exist, and if it already exists, its contents are overwritten.
+Parameters:
+- filename: name of the file to write to.
 
-The method returns an error if there is an issue writing the file, or `nil` if the file is
-successfully written.
+Returns:
+- error if any.
 */
-func (d deck) saveToFile(filename string) error {
+func (d *deck) saveToFile(filename string) error {
 	return ioutil.WriteFile(filename, d.toByteSlice(), 0666)
 }
 
 /*
-readFromFile reads a deck of cards from a file. The file must contain a single card per line,
-with each line terminated by a newline character ("\n").
+readFromFile reads contents from a file and converts it to a deck of cards.
+
+Parameters:
+- filename: name of the file to read from.
+
+Returns:
+- deck struct representing the contents of the file.
 */
 func readFromFile(filename string) deck {
-	byteSlice, err := ioutil.ReadFile("game_deck.txt")
+	byte_slice, err := ioutil.ReadFile(filename)
 	if err != nil {
-		fmt.Sprintf("Error Reading File: %s\n", err)
+		fmt.Printf("Error Reading File: %s\n", err)
 	}
 
-	return deck(deck(strings.Split(string(byteSlice), "\n")))
+	string_slice := strings.Split(string(byte_slice), "\n")
+
+	d := deck{}
+	for i := 0; i < len(string_slice); i++ {
+		c := strings.Split(string_slice[i], " of ")
+		d.cards = append(
+			d.cards, card{
+				value: c[0],
+				suit:  c[1],
+			},
+		)
+	}
+
+	return d
 }
