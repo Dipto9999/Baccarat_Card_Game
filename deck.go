@@ -19,6 +19,18 @@ const (
 var values [totalValues]string
 var suits [totalSuits]string
 
+// Card represents a playing card.
+type card struct {
+	value string
+	suit  string
+}
+
+// Deck represents a deck of cards.
+type deck struct {
+	owner string
+	cards []card
+}
+
 /*
 init initializes the values and suits arrays.
 */
@@ -53,18 +65,6 @@ func getNumber(max int) int {
 
 	// Generate a random number within a specified range.
 	return r.Intn(max)
-}
-
-// Card represents a playing card.
-type card struct {
-	value string
-	suit  string
-}
-
-// Deck represents a deck of cards.
-type deck struct {
-	owner string
-	cards []card
 }
 
 /*
