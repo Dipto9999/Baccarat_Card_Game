@@ -3,6 +3,6 @@ package main
 import "fmt"
 
 func main() {
-	winner := play_baccarat()
-	fmt.Printf("Winner : %s\n\n", winner)
+	fmt.Printf("Welcome to Baccarat!\n\n")
+	fmt.Printf("\nWinner: %s\n", play_baccarat())
 }

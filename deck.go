@@ -29,6 +29,7 @@ type card struct {
 type deck struct {
 	owner string
 	cards []card
+	score int
 }
 
 /*
@@ -95,6 +96,9 @@ func initDeck(individual ...string) deck {
 	if individual != nil {
 		game_deck.owner = individual[0]
 	}
+
+	// Assign the score to -1 since this is a new deck.
+	game_deck.score = -1
 
 	return game_deck
 }
@@ -199,7 +203,7 @@ func (d *deck) getCard(c card) {
 giveCard retrieves a random card from the deck and removes it.
 
 Receiver:
-- d: deck from which the card will be retrieved.
+- d: pointer to the deck from which the card will be retrieved.
 
 Returns:
 - card struct representing the card retrieved from the deck.
@@ -219,7 +223,7 @@ shuffle iterates through the deck of cards a specified number of times
 and swaps each card with a random card.
 
 Receiver:
-- d: deck to shuffle.
+- d: pointer to the deck to shuffle.
 
 Parameters:
 - iter: An integer representing the number of times to iterate through the deck.
@@ -244,18 +248,18 @@ and gives them to another deck. It then updates the file for the deck
 from which the cards were taken.
 
 Receiver:
-- tx: deck from which cards will be taken.
+- tx: pointer to the deck from which cards will be taken.
 
 Parameters:
-- rx: deck to which cards will be given.
-- num_cards: An integer representing the number of cards to take from the deck.
+- rx: pointer to the deck to which cards will be given.
+- n_cards: An integer representing the number of cards to take from the deck.
 */
-func (tx *deck) deal(rx *deck, num_cards int) {
-	if num_cards < 0 {
-		num_cards = 1
+func (tx *deck) deal(rx *deck, n_cards int) {
+	if n_cards < 0 {
+		n_cards = 1
 	}
 
-	for i := 0; i < num_cards; i++ {
+	for i := 0; i < n_cards; i++ {
 		rx.getCard(tx.giveCard())
 	}
 

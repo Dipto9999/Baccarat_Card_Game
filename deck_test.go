@@ -32,8 +32,8 @@ func TestInitDeck(t *testing.T) {
 }
 
 func TestNewDeck(t *testing.T) {
-	d_returned := newDeck(5, "Deck Test")
-	d_file := readFromFile("deck_test.txt")
+	d_returned := newDeck(5, "Test Deck")
+	d_file := readFromFile("test_deck.txt")
 
 	// Check that the new deck is made of 56 cards.
 	if len(d_returned.cards) != 56 {
@@ -86,7 +86,7 @@ func TestShuffle(t *testing.T) {
 }
 
 func TestDeal(t *testing.T) {
-	d_game := newDeck(5, "Deck Test")
+	d_game := newDeck(5, "Test Deck")
 	d_player := deck{}
 
 	d_game.deal(&d_player, 5)
@@ -119,7 +119,7 @@ func TestDeal(t *testing.T) {
 	}
 
 	// Check that the deck written to file is made of 51 cards.
-	d_file := readFromFile("deck_test.txt")
+	d_file := readFromFile("test_deck.txt")
 	if len(d_file.cards) != len(d_game.cards) {
 		t.Errorf("File Deck Length of %d. Expected 51", len(d_file.cards))
 	}
@@ -130,5 +130,52 @@ func TestDeal(t *testing.T) {
 			t.Errorf("Card %d in Returned Deck is %s.", i, d_game.cards[i].value+" of "+d_game.cards[i].suit)
 			t.Errorf("Card %d in File Deck is %s.", i, d_file.cards[i].value+" of "+d_file.cards[i].suit)
 		}
+	}
+}
+
+func TestScore(t *testing.T) {
+	// Create a deck with 2 cards.
+	d := deck{
+		cards: []card{
+			{value: "10", suit: "Clubs"},
+			{value: "2", suit: "Hearts"},
+		},
+	}
+	d.calculateScore()
+
+	// Check that the score is 2.
+	if d.score != 2 {
+		t.Errorf("Deck Score is %d. Expected 2", d.score)
+	}
+
+	// Create deck with 3 cards.
+	d = deck{
+		cards: []card{
+			{value: "Ace", suit: "Clubs"},
+			{value: "2", suit: "Spades"},
+			{value: "3", suit: "Diamonds"},
+		},
+	}
+	d.calculateScore()
+
+	// Check that the score is 6.
+	if d.score != 6 {
+		t.Errorf("Deck Score is %d. Expected 6", d.score)
+	}
+
+	// Create a deck with 3 cards.
+	d = deck{
+		cards: []card{
+			{value: "Queen", suit: "Spades"},
+			{value: "King", suit: "Diamonds"},
+			{value: "9", suit: "Clubs"},
+		},
+	}
+
+	d.calculateScore()
+
+	// Check that the score is 9.
+	if d.score != 9 {
+		t.Errorf("Deck Score is %d. Expected 9", d.score)
 	}
 }
