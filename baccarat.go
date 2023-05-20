@@ -214,8 +214,6 @@ func play_baccarat() string {
 		third_score := player_deck.cards[2].getScore()
 
 		switch banker_deck.score {
-		case (winThreshold - 1):
-			banker_final = false
 		case (winThreshold - 2):
 			banker_final = (third_score >= banker_deck.score) &&
 				(third_score < winThreshold)
