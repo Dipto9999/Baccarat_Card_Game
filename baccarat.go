@@ -155,16 +155,18 @@ game ends and the winner is determined using the `getWinner` function. The winne
 Round 3:
 - If the player's score is less than or equal to the `finalRoundThreshold`, the player receives
 a third card.
-  - The banker will draw a third card if the banker's score is `finalRoundThreshold + 1` and
-    the player's third card value is equal to the banker's score and less than the `winThreshold`.
-  - The banker will draw a third card if the banker's score is `finalRoundThreshold` and
+  - The banker will draw a third card if the banker's score is `winThreshold` - 2 and
+    the player's third card value is greater than or equal to the banker's score and less than the `winThreshold`.
+  - The banker will draw a third card if the banker's score is `winThreshold` - 3 and
     the player's third card value is greater than or equal to 4 and less than `winThreshold`.
-  - The banker will draw a third card if the banker's score is `finalRoundThreshold - 1` and
+  - The banker will draw a third card if the banker's score is `winThreshold` - 4 and
     the player's third card value is greater than or equal to 2 and less than `winThreshold`.
-  - The banker will draw a third card if the banker's score is `finalRoundThreshold - 2` and
+  - The banker will draw a third card if the banker's score is `winThreshold` - 5 and
     the player's third card value is not equal to `winThreshold`.
+  - The banker will draw a third card if the banker's score is less than or equal to 2.
 
-- The banker will draw a third card in spite of the above if the banker's score is less than or equal to 2.
+- The banker will draw a third card in spite of the above if the banker's score is less than or\
+equal to `finalRoundThreshold`.
 
 The scores of the player and the banker are calculated again, and the results are printed to the
 console. The winner is determined using the `getWinner` function, considering the updated scores.
@@ -204,14 +206,15 @@ func play_baccarat() string {
 	/* Round 3 */
 	/***********/
 
-	player_final := (player_deck.score <= finalRoundThreshold)
-	banker_final := (banker_deck.score <= finalRoundThreshold)
-
-	if player_final {
+	// Determine if player and banker get a third card.
+	var banker_final bool
+	if player_deck.score <= finalRoundThreshold {
 		game_deck.deal(&player_deck, 1)
 		third_score := player_deck.cards[2].getScore()
 
 		switch banker_deck.score {
+		case (winThreshold - 1):
+			banker_final = false
 		case (winThreshold - 2):
 			banker_final = (third_score >= banker_deck.score) &&
 				(third_score < winThreshold)
@@ -219,6 +222,9 @@ func play_baccarat() string {
 			banker_final = (third_score >= banker_deck.score-1) &&
 				(third_score < winThreshold)
 		case (winThreshold - 4):
+			banker_final = (third_score >= banker_deck.score-2) &&
+				(third_score < winThreshold)
+		case (winThreshold - 5):
 			banker_final = (third_score != winThreshold)
 		case 2, 1, 0:
 			banker_final = true
@@ -227,6 +233,7 @@ func play_baccarat() string {
 		}
 	}
 
+	banker_final = banker_final || (banker_deck.score <= finalRoundThreshold)
 	if banker_final {
 		game_deck.deal(&banker_deck, 1)
 	}
