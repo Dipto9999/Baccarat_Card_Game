@@ -57,15 +57,11 @@ Returns:
 - random number within the range [0, max) as an integer.
 */
 func getNumber(max int) int {
-	// Get a new source.
-	r := rand.New(
-		rand.NewSource(
-			time.Now().UnixNano(),
-		),
-	)
+	// Generate a seed.
+	rand.Seed(time.Now().UnixNano())
 
 	// Generate a random number within a specified range.
-	return r.Intn(max)
+	return rand.Intn(max)
 }
 
 /*
